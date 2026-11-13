@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VI.P.2 Procedure Scheduling | Practice Clinic</title>
+<style>
+:root{--green:#1d5741;--dark:#16432f;--gold:#f2d675;--light:#e3f1eb;--line:#c9d6cf;--red:#9b2c1c;--ink:#1f2a24}
+*{box-sizing:border-box}
+body{margin:0;font-family:Lato,"Segoe UI",Arial,sans-serif;color:var(--ink);background:#f3f5f4}
+header{background:var(--green);color:#fff;padding:22px 28px}
+header h1{margin:0;font-size:26px}
+header p{margin:6px 0 0;color:var(--gold);font-size:14px}
+.notice{margin:16px 24px;background:#fdf3d0;border:1px solid #e6cf7a;border-left:6px solid #d4af37;border-radius:6px;padding:10px 14px;font-size:14px}
+.wrap{display:flex;gap:18px;padding:0 24px 40px;align-items:flex-start;flex-wrap:wrap}
+aside{flex:1 1 260px;max-width:340px;background:#fff;border-radius:8px;padding:18px;position:sticky;top:10px;max-height:96vh;overflow:auto}
+main{flex:3 1 560px;min-width:0}
+.card{background:#fff;border-radius:8px;padding:18px 20px;margin-bottom:16px}
+.step{display:inline-block;background:var(--light);border-radius:12px;padding:2px 10px;font-size:13px;margin-bottom:6px}
+h2{margin:4px 0 12px;font-size:21px;color:var(--dark)}
+h3{margin:14px 0 8px;color:var(--dark);font-size:17px}
+label{display:block;font-weight:bold;font-size:13px;margin:8px 0 4px}
+input,select,textarea{width:100%;padding:8px;border:1px solid #9fb2a8;border-radius:4px;font:inherit;font-size:14px}
+textarea{min-height:52px}
+.row{display:flex;gap:12px;flex-wrap:wrap}.row>div{flex:1 1 180px}
+button{background:var(--green);color:#fff;border:0;border-radius:5px;padding:9px 16px;font:inherit;font-weight:bold;cursor:pointer;margin:8px 8px 0 0}
+button.secondary{background:#fff;color:var(--green);border:2px solid var(--green)}
+details{border-top:1px solid var(--line);padding:8px 0}
+summary{cursor:pointer;font-weight:bold;color:var(--dark)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+th{background:var(--light);width:38%}
+.small{font-size:13px;color:#4a5a52}
+.call{background:#f7faf8;border-left:5px solid var(--green);border-radius:4px;padding:10px 14px;margin-top:8px;font-size:14px;display:none}
+.consent{border:1px solid var(--line);border-radius:6px;padding:12px 14px;font-size:14px;background:#fcfdfc}
+.chk{display:flex;gap:8px;align-items:center;font-weight:normal}.chk input{width:auto}
+.msg{margin-top:8px;font-size:14px}.msg.err{color:var(--red)}
+#status{position:fixed;left:0;right:0;bottom:0;background:#fdf3d0;border-top:1px solid #e6cf7a;padding:8px 24px;font-size:14px;display:none}
+#report{display:none}
+@media print{body{background:#fff}header,.notice,.wrap,#status{display:none!important}#report{display:block;font-size:12px}#report table{font-size:11px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Practice Clinic / Referrals and Outside Procedures</h1>
+<p>MEAS209 · VI.P.2 · Schedule a Patient Procedure · Version 1.0</p>
+</header>
+<div class="notice"><strong>Fictional training environment.</strong> Enter only the supplied case information. Your work is saved in this browser on this device. Submit the PDF report in Canvas; saving here does not send work to your instructor.</div>
+<div class="wrap">
+<aside>
+<h3 style="margin-top:0">Work queue</h3>
+<p class="small">Referral order for <strong>Thomas R. Bird</strong>: screening colonoscopy at Riverbend GI Center.</p>
+<ol class="small">
+<li>Read the order, insurance, facility and prep instructions.</li>
+<li>Make the phone calls you need.</li>
+<li>Complete the scheduling screen.</li>
+<li>Give the preparation instructions.</li>
+<li>Complete the consent, sign as witness, then save, reopen and create your report.</li>
+</ol>
+<h3>Source documents</h3>
+<details open><summary>Provider order</summary><table>
+<tr><th>Date of order</th><td>04/06/26</td></tr><tr><th>Patient</th><td>Thomas R. Bird</td></tr><tr><th>Date of birth</th><td>12/09/1958</td></tr><tr><th>Chart number</th><td>10201</td></tr><tr><th>Procedure ordered</th><td>Screening colonoscopy</td></tr><tr><th>CPT code</th><td>45378</td></tr><tr><th>Diagnosis</th><td>Z12.11, encounter for screening for malignant neoplasm of colon</td></tr><tr><th>Refer to</th><td>Riverbend GI Center</td></tr><tr><th>Ordering provider</th><td>Harriet Armnleg, MD · NPI 1447882901</td></tr><tr><th>Note</th><td>Patient is diabetic on metformin. Follow the facility's instruction on holding it.</td></tr></table></details>
+<details><summary>Patient insurance</summary><table>
+<tr><th>Carrier</th><td>Meridian PPO</td></tr><tr><th>Member ID</th><td>MPP-3340118</td></tr><tr><th>Group</th><td>41077</td></tr><tr><th>Provider services</th><td>1-800-555-0142</td></tr><tr><th>Prior authorization</th><td>Required for all endoscopy</td></tr></table></details>
+<details><summary>Riverbend GI Center</summary><table>
+<tr><th>Address</th><td>1810 Riverbend Drive, Suite 300, Fort Wayne, IN 46815</td></tr><tr><th>Scheduling</th><td>(555) 388-4100</td></tr></table></details>
+<details><summary>Preparation instructions (from Riverbend)</summary><table>
+<tr><th>Arrival</th><td>Arrive 60 minutes before the procedure time.</td></tr><tr><th>Diet</th><td>Clear liquids only for the entire day before the procedure.</td></tr><tr><th>Bowel prep</th><td>Prep kit collected from the center's pharmacy at least three days ahead. Begin at 5:00 PM the day before.</td></tr><tr><th>Nothing by mouth</th><td>No food or drink after midnight the night before.</td></tr><tr><th>Diabetes medication</th><td>Hold the morning dose of metformin on the day of the procedure. Take all other medications as usual with a sip of water.</td></tr><tr><th>Transportation</th><td>Sedation is used. The patient must have a driver and cannot drive, take a taxi, or ride alone.</td></tr></table></details>
+</aside>
+<main>
+<section class="card"><span class="step">1 · Sign in</span><h2>Student information</h2>
+<div class="row"><div><label for="student">Student name or assigned ID *</label><input id="student" data-f></div><div><label for="course">Course / section *</label><input id="course" data-f></div></div></section>
+<section class="card"><span class="step">2 · Phone calls</span><h2>Make the calls you need</h2>
+<p class="small">Today is 04/06/26. Each call is recorded in your work log.</p>
+<button class="secondary" id="callIns">Call Meridian PPO provider services</button>
+<button class="secondary" id="callFac">Call Riverbend GI Center scheduling</button>
+<div class="call" id="insNote"><strong>Meridian PPO, 1-800-555-0142.</strong> The representative confirms that prior authorization is required for CPT 45378 under this plan and approves it today. Authorization number <strong>MP-7741208</strong>.</div>
+<div class="call" id="facNote"><strong>Riverbend GI Center, (555) 388-4100.</strong> You speak with <strong>D. Keller</strong>, who offers two screening slots: <strong>04/24/26 at 7:30 AM</strong> or <strong>04/28/26 at 9:00 AM</strong>, and will hold the one you choose.</div>
+</section>
+<section class="card"><span class="step">3 · Scheduling screen</span><h2>Procedure scheduling</h2>
+<h3>Procedure and patient</h3>
+<div class="row"><div><label for="ptName">Patient name *</label><input id="ptName" data-f></div><div><label for="ptDob">Date of birth *</label><input id="ptDob" data-f placeholder="MM/DD/YYYY"></div><div><label for="ptChart">Chart # *</label><input id="ptChart" data-f></div></div>
+<div class="row"><div><label for="proc">Procedure *</label><input id="proc" data-f></div><div><label for="cpt">CPT *</label><input id="cpt" data-f></div><div><label for="dx">Diagnosis *</label><input id="dx" data-f></div></div>
+<h3>Prior authorization</h3>
+<div class="row"><div><label for="authReq">Required by this plan? *</label><select id="authReq" data-f><option value="">Select…</option><option>Yes</option><option>No</option></select></div><div><label for="authOb">Obtained? *</label><select id="authOb" data-f><option value="">Select…</option><option>Yes</option><option>No</option></select></div><div><label for="authNo">Authorization number *</label><input id="authNo" data-f></div><div><label for="authDate">Date obtained *</label><input id="authDate" data-f placeholder="MM/DD/YY"></div></div>
+<h3>Appointment confirmed with facility</h3>
+<div class="row"><div><label for="fac">Facility *</label><input id="fac" data-f></div><div><label for="facPh">Phone *</label><input id="facPh" data-f></div><div><label for="spoke">Spoke with *</label><input id="spoke" data-f></div></div>
+<div class="row"><div><label for="procDate">Procedure date *</label><input id="procDate" data-f placeholder="MM/DD/YY"></div><div><label for="procTime">Procedure time *</label><input id="procTime" data-f placeholder="e.g., 7:30 AM"></div><div><label for="arrive">Patient arrival time *</label><input id="arrive" data-f></div></div>
+<label for="facAddr">Facility address *</label><input id="facAddr" data-f>
+</section>
+<section class="card"><span class="step">4 · Preparation</span><h2>Patient preparation instructions given</h2>
+<p class="small">Write each instruction as you gave it to Mr. Bird, with the actual dates for the appointment you chose.</p>
+<label for="prepDiet">Diet the day before *</label><textarea id="prepDiet" data-f></textarea>
+<label for="prepBowel">Bowel prep *</label><textarea id="prepBowel" data-f></textarea>
+<label for="prepNpo">Nothing by mouth after *</label><textarea id="prepNpo" data-f></textarea>
+<label for="prepMeds">Medications to hold *</label><textarea id="prepMeds" data-f></textarea>
+<label for="prepTrans">Transportation *</label><textarea id="prepTrans" data-f></textarea>
+</section>
+<section class="card"><span class="step">5 · Consent and entry record</span><h2>Consent for treatment: outside procedure</h2>
+<div class="consent">
+<div class="row"><div><label for="cName">Patient name</label><input id="cName" data-f></div><div><label for="cDob">Date of birth</label><input id="cDob" data-f></div><div><label for="cChart">Chart number</label><input id="cChart" data-f></div></div>
+<div class="row"><div><label for="cProc">Procedure</label><input id="cProc" data-f></div><div><label for="cFac">Facility</label><input id="cFac" data-f></div><div><label for="cWhen">Scheduled date and time</label><input id="cWhen" data-f></div></div>
+<p class="small">I authorize Harriet Armnleg, MD, and the providers of the facility named above to perform the procedure described above. The nature, purpose, benefits, alternatives and risks have been explained to me. I understand that sedation will be used and that I must have a responsible adult to drive me home. I understand that I must follow the preparation instructions, and that the procedure may be cancelled if preparation is not completed. I authorize the release of relevant medical information to the facility and its report back to this office. No guarantee has been made about the result.</p>
+<button class="secondary" id="ptSign">Have the patient sign electronically</button>
+<div id="ptSig" class="small"></div>
+<div class="row"><div><label for="witName">Witness signature (your full name)</label><input id="witName" data-f></div><div><label for="witCred">Credential</label><input id="witCred" data-f placeholder="SMA"></div></div>
+<label class="chk"><input type="checkbox" id="k1" data-f> Every field above is completed</label>
+<label class="chk"><input type="checkbox" id="k2" data-f> The patient has signed and dated it</label>
+<label class="chk"><input type="checkbox" id="k3" data-f> It is witnessed and credentialed</label>
+</div>
+<div class="row"><div><label for="consentOk">Consent for treatment obtained and complete? *</label><select id="consentOk" data-f><option value="">Select…</option><option>Yes</option><option>No</option></select></div><div><label for="schedBy">Scheduled by *</label><input id="schedBy" data-f></div><div><label for="schedCred">Credential *</label><input id="schedCred" data-f></div><div><label for="schedDate">Date *</label><input id="schedDate" data-f placeholder="MM/DD/YY"></div></div>
+<button id="save">Save record</button>
+<button id="reopen" class="secondary">Reopen saved record</button>
+<button id="makeReport">Create submission report</button>
+<div id="sMsg" class="msg"></div>
+</section>
+</main>
+</div>
+<div id="report"></div>
+<div id="status"></div>
+<script>
+(function(){
+"use strict";
+var KEY="meas209-vip2-procedure-v1";
+var state={f:{},log:[],calls:{},ptSigned:null,savedAt:null,reopenedAt:null};
+function $(id){return document.getElementById(id);}
+function now(){return new Date().toLocaleString();}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function log(a){state.log.push({at:now(),action:a});}
+function msg(t,err){var m=$("sMsg");m.textContent=t;m.className="msg"+(err?" err":"");}
+var fields=[].slice.call(document.querySelectorAll("[data-f]"));
+function label(el){var l=document.querySelector('label[for="'+el.id+'"]');return l?l.textContent.replace(/\s*\*$/,""):(el.parentNode.textContent||el.id).trim();}
+var logged={};
+fields.forEach(function(el){el.addEventListener("change",function(){
+var v=el.type==="checkbox"?(el.checked?"checked":"unchecked"):el.value;
+state.f[el.id]=el.type==="checkbox"?el.checked:el.value;
+if(!logged[el.id]){logged[el.id]=1;log("First entry: "+label(el));}
+if(["authReq","authOb","procDate","procTime","consentOk"].indexOf(el.id)>=0) log(label(el)+" set to "+v);
+});});
+function showCalls(){$("insNote").style.display=state.calls.ins?"block":"none";$("facNote").style.display=state.calls.fac?"block":"none";$("ptSig").textContent=state.ptSigned?("Signed electronically by the patient, Thomas R. Bird, "+state.ptSigned+"."):"";}
+$("callIns").onclick=function(){if(!state.calls.ins){state.calls.ins=now();log("Called Meridian PPO provider services: authorization required, approved, MP-7741208");}showCalls();};
+$("callFac").onclick=function(){if(!state.calls.fac){state.calls.fac=now();log("Called Riverbend GI Center scheduling: spoke with D. Keller; offered 04/24/26 7:30 AM or 04/28/26 9:00 AM");}showCalls();};
+$("ptSign").onclick=function(){
+var need=["cName","cDob","cChart","cProc","cFac","cWhen"].filter(function(id){return !$(id).value.trim();});
+if(need.length){msg("Complete the consent fields before the patient signs.",true);return;}
+state.ptSigned=now();log("Patient signed consent electronically");showCalls();msg("The patient has signed the consent.");
+};
+function collect(){fields.forEach(function(el){state.f[el.id]=el.type==="checkbox"?el.checked:el.value;});}
+function fill(){fields.forEach(function(el){var v=state.f[el.id];if(el.type==="checkbox")el.checked=!!v;else el.value=v==null?"":v;});showCalls();}
+function store(){try{localStorage.setItem(KEY,JSON.stringify(state));return true;}catch(e){return false;}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"null");}catch(e){return null;}}
+$("save").onclick=function(){
+collect();
+var miss=fields.filter(function(el){var l=document.querySelector('label[for="'+el.id+'"]');return l&&/\*\s*$/.test(l.textContent)&&!String(state.f[el.id]||"").trim();}).map(label);
+if(miss.length){msg("Complete these required fields before saving: "+miss.join(", ")+".",true);return;}
+state.savedAt=now();log("Saved record");var ok=store();
+msg(ok?"Saved "+state.savedAt+". Select Reopen saved record to verify it.":"This browser blocked saving. Create your report now.",!ok);
+};
+$("reopen").onclick=function(){var s=load();if(!s){msg("No saved record on this device yet. Select Save record first.",true);return;}state=s;state.reopenedAt=now();log("Reopened saved record");store();fill();msg("Reopened the record saved "+state.savedAt+".");};
+$("makeReport").onclick=function(){
+collect();
+if(!state.savedAt||!state.reopenedAt){msg("Save the record and reopen it before you create the report.",true);return;}
+var sec=[["Procedure and patient",["ptName","ptDob","ptChart","proc","cpt","dx"]],["Prior authorization",["authReq","authOb","authNo","authDate"]],["Appointment confirmed with facility",["fac","facPh","spoke","procDate","procTime","arrive","facAddr"]],["Patient preparation instructions given",["prepDiet","prepBowel","prepNpo","prepMeds","prepTrans"]],["Consent for treatment",["cName","cDob","cChart","cProc","cFac","cWhen","witName","witCred","k1","k2","k3"]],["Consent and entry record",["consentOk","schedBy","schedCred","schedDate"]]];
+var r='<h2>VI.P.2 Procedure Scheduling: Submission Report</h2><p><strong>Student:</strong> '+esc(state.f.student)+' &nbsp; <strong>Course:</strong> '+esc(state.f.course)+'<br><strong>Report created:</strong> '+esc(now())+' &nbsp; <strong>Saved:</strong> '+esc(state.savedAt)+' &nbsp; <strong>Reopened:</strong> '+esc(state.reopenedAt)+'</p>';
+sec.forEach(function(s){r+='<h3>'+s[0]+'</h3><table>'+s[1].map(function(id){var v=state.f[id];if(typeof v==="boolean")v=v?"Checked":"Not checked";return '<tr><th>'+esc(label($(id)))+'</th><td>'+esc(v||"(blank)")+'</td></tr>';}).join('')+(s[0]==="Consent for treatment"?'<tr><th>Patient signature</th><td>'+esc(state.ptSigned?("Signed electronically by Thomas R. Bird, "+state.ptSigned):"Not signed")+'</td></tr>':'')+'</table>';});
+r+='<h3>Phone calls</h3><table><tr><th>Meridian PPO provider services</th><td>'+esc(state.calls.ins||"Not called")+'</td></tr><tr><th>Riverbend GI Center scheduling</th><td>'+esc(state.calls.fac||"Not called")+'</td></tr></table>';
+r+='<h3>Work log (order of actions)</h3><ol>'+state.log.map(function(l){return '<li>'+esc(l.at)+': '+esc(l.action)+'</li>';}).join('')+'</ol><p class="small">Fictional training record. The browser-local log shows workflow order; it does not verify identity.</p>';
+$("report").innerHTML=r;log("Created submission report");store();
+msg("Your print window is opening. Choose Save as PDF, then upload that PDF in Canvas.");window.print();
+};
+if(load()){$("status").style.display="block";$("status").textContent="A saved record is available on this device. Select Reopen saved record to continue it.";}
+})();
+</script>
+</body>
+</html>
