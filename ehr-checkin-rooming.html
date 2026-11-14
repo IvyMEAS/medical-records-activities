@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Check-In and Rooming a Patient</title>
+<style>
+:root{--g:#006648;--g2:#e8f5ea;--lime:#8dc63f;--ink:#1d2421;--mut:#55605b;--line:#cfd8d3;--bg:#f4f6f5;--bad:#a4161a;--badbg:#fbe9ea;--ok:#1b6e3a;--okbg:#e6f4ea;--blue:#1f4e79;--bluebg:#eef3f8}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.45}
+header.top{background:var(--g);color:#fff;padding:12px 18px;border-bottom:6px solid var(--lime);display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+header.top .sub{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#cfe8d6}
+header.top h1{margin:2px 0 0;font-size:22px}
+header.top .who{font-size:13px;text-align:right}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--g);background:#fff;color:var(--g);padding:7px 12px}
+button.pri{background:var(--g);color:#fff}
+button:disabled{opacity:.5;cursor:not-allowed}
+.wrap{display:grid;grid-template-columns:minmax(260px,34%) 1fr;gap:14px;padding:14px;max-width:1400px;margin:0 auto}
+@media(max-width:860px){.wrap{grid-template-columns:1fr}}
+.panel{background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.panel h2{margin:0;font-size:15px;background:var(--g2);color:var(--g);padding:9px 12px;border-bottom:1px solid var(--line)}
+.panel .body{padding:12px}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;padding:8px 8px 0;border-bottom:1px solid var(--line);background:#fafcfb}
+.tabs button{border-radius:6px 6px 0 0;border-bottom:none;padding:6px 10px;font-size:13px}
+.tabs button.on{background:var(--g);color:#fff}
+.doc{display:none;padding:12px}
+.doc.on{display:block}
+.doc table{border-collapse:collapse;width:100%;font-size:14px}
+.doc td,.doc th{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+.doc th{background:#f3f6f4}
+.card{border:2px solid var(--blue);border-radius:10px;padding:10px 12px;background:var(--bluebg);margin:6px 0;font-size:14px}
+.say{background:#fffbe6;border-left:4px solid #d4a017;padding:8px 10px;margin:6px 0;font-style:italic}
+.task{border:1px solid var(--line);border-radius:8px;margin:0 0 12px;background:#fff}
+.task>h3{margin:0;font-size:15px;padding:9px 12px;background:#f7faf8;border-bottom:1px solid var(--line);color:var(--g)}
+.task .body{padding:10px 12px}
+.f{display:grid;grid-template-columns:minmax(160px,38%) 1fr;gap:8px;align-items:center;margin:0 0 8px}
+@media(max-width:600px){.f{grid-template-columns:1fr}}
+.f label{font-weight:bold;font-size:14px}
+.f .hint{grid-column:1/-1;font-size:13px;color:var(--mut);margin-top:-4px}
+input[type=text],input[type=number],select,textarea{font:inherit;padding:6px 8px;border:1px solid #aab8b1;border-radius:5px;width:100%;background:#fff}
+textarea{min-height:60px}
+.chk{display:flex;gap:8px;align-items:flex-start;margin:0 0 6px}
+.chk input{margin-top:3px}
+.fb{font-size:13px;margin-top:2px;grid-column:1/-1;padding:4px 8px;border-radius:4px;display:none}
+.fb.ok{display:block;background:var(--okbg);color:var(--ok)}
+.fb.no{display:block;background:var(--badbg);color:var(--bad)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;background:#fff;border-top:1px solid var(--line);position:sticky;bottom:0}
+.note{background:var(--g2);border-left:5px solid var(--g);padding:10px 12px;margin:0 0 12px;font-size:14px}
+.warn{background:#fdf1e6;border-left:5px solid #b5651d;padding:10px 12px;margin:0 0 12px;font-size:14px}
+#start{max-width:720px;margin:24px auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+#start h2{margin-top:0;color:var(--g)}
+.hidden{display:none!important}
+.bucket{display:flex;gap:8px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin:0 0 6px;flex-wrap:wrap}
+.bucket span{flex:1 1 60%}
+.bucket select{width:auto;min-width:190px}
+.searchres{border:1px dashed var(--line);padding:8px;margin:6px 0;font-size:14px;min-height:30px}
+.log{font-size:12px;color:var(--mut);max-height:160px;overflow:auto;border-top:1px solid var(--line);padding:6px 12px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div><div class="sub">MEAS 209 · EHR Simulation · EHR 12-2</div><h1>Check-In and Rooming a Patient</h1></div>
+  <div class="who" id="who"></div>
+</header>
+
+<section id="start">
+  <h2>Before you begin</h2>
+  <div class="note" id="intro"></div>
+  <div class="f"><label for="sname">Your full name</label><input type="text" id="sname" autocomplete="name"></div>
+  <div class="f"><label for="scourse">Course and section</label><input type="text" id="scourse" placeholder="MEAS 209-"></div>
+  <div class="f"><label for="smode">Mode</label>
+    <select id="smode"><option value="practice">Practice (unlimited, shows hints and feedback)</option><option value="assess">Assessment (graded; creates your submission report)</option></select></div>
+  <div class="warn">Your work saves only in this browser on this device. Finish on the same computer. In Assessment mode, each attempt uses a new patient case. Nothing is sent to your instructor; only the PDF report you upload counts.</div>
+  <button class="pri" id="go">Start</button>
+  <button id="resume" class="hidden">Reopen saved record</button>
+</section>
+
+<main id="app" class="hidden">
+  <div class="wrap">
+    <div class="panel"><h2 id="srcTitle">Source documents</h2><div class="tabs" id="srcTabs"></div><div id="srcDocs"></div></div>
+    <div class="panel"><h2>Electronic health record · <span id="ehrTitle"></span></h2><div class="body" id="tasks"></div>
+      <div class="log" id="logbox" aria-label="Work log"></div>
+    </div>
+  </div>
+  <div class="bar">
+    <button id="save">Save record</button>
+    <button id="check" class="hidden">Check my work</button>
+    <button class="pri" id="report">Create submission report</button>
+    <span id="status" style="align-self:center;font-size:13px;color:var(--mut)"></span>
+  </div>
+</main>
+
+<script>
+const ACT = {"id": "checkin-rooming", "code": "EHR 12-2", "title": "Check-In and Rooming a Patient", "ehrTitle": "{name} \u00b7 DOB {dob}", "intro": "A returning patient is at the front desk. Verify identity, update what has changed, collect the copay, then room the patient: chief complaint, vital signs, allergies and medication reconciliation. The MA documents what the patient reports and flags differences for the provider.", "sources": [{"label": "Chart on file", "html": "<table><tr><td>Address</td><td>{old_addr}</td></tr><tr><td>Insurance member ID</td><td>{old_member}</td></tr><tr><td>Allergies</td><td>No known drug allergies</td></tr></table>{medlist}"}, {"label": "At the front desk", "html": "<div class=\"say\">\"Hi, I'm {name}, my birthday is {dob}.\"</div><div class=\"say\">\"I moved. My new address is {new_addr}, {new_city}, IN {new_zip}.\"</div><div class=\"say\">\"I have a new insurance card, too.\"</div><div class=\"card\"><b>{new_plan}</b><br>Member ID: <b>{new_member}</b><br>Office visit copay: ${copay}</div>"}, {"label": "Rooming conversation", "html": "<div class=\"say\">\"{cc}\"</div><p><b>You measured:</b> T {temp} \u00b0F oral, P {p}, BP {bp}.</p><div class=\"say\">\"Oh, and I need to tell you about a new allergy: {new_allergy}.\"</div><p><b>Medication review:</b></p>{medsay}"}], "tasks": [{"title": "1. Check-in", "fields": [{"id": "ids", "type": "select", "label": "Identifiers used to verify the patient", "options": ["Name and date of birth", "Name only", "Appointment time", "Address only"], "expect": "Name and date of birth", "crit": "Identity verification", "critical": true}, {"id": "na", "type": "text", "label": "Updated street address", "expect": "{new_addr}", "crit": "Check-in updates"}, {"id": "nz", "type": "text", "label": "Updated ZIP code", "expect": "{new_zip}", "crit": "Check-in updates"}, {"id": "nm", "type": "text", "label": "New insurance member ID", "expect": "{new_member}", "crit": "Check-in updates", "critical": true}, {"id": "cp", "type": "text", "label": "Copay collected today ($)", "expect": "{copay}", "match": "num", "crit": "Check-in updates"}]}, {"title": "2. Rooming", "fields": [{"id": "cc", "type": "text", "label": "Chief complaint (patient's words in quotation marks)", "expect": "^\\s*[\"\u201c].*{key}.*[\"\u201d]\\s*$", "match": "regex", "crit": "Rooming documentation"}, {"id": "t", "type": "text", "label": "Temperature (\u00b0F)", "expect": "{temp}", "match": "num", "tol": 0.05, "crit": "Rooming documentation"}, {"id": "p", "type": "text", "label": "Pulse (/min)", "expect": "{p}", "match": "num", "crit": "Rooming documentation"}, {"id": "bp", "type": "text", "label": "Blood pressure", "expect": "^\\s*{bp}\\s*$", "match": "regex", "crit": "Rooming documentation"}, {"id": "al", "type": "text", "label": "New allergy and reaction", "expect": "{new_allergy}", "match": "contains", "crit": "Rooming documentation", "critical": true}]}, {"title": "3. Medication reconciliation", "fields": [{"id": "mr", "type": "sort", "label": "For each medication, choose what to document", "buckets": ["Taking as listed", "Not taking \u2013 flag for provider", "New, patient-reported \u2013 add and flag for provider"], "crit": "Medication reconciliation", "items": [{"t": "{m0}", "b": "{mb0}"}, {"t": "{m1}", "b": "{mb1}"}, {"t": "{m2}", "b": "{mb2}"}]}]}], "cases": [{"id": "P-1 (practice)", "v": {"name": "Sandra Price", "dob": "01/09/1972", "old_addr": "15 Pine St", "new_addr": "908 Ridge Rd", "new_city": "Fort Wayne", "new_zip": "46816", "old_member": "W200114778", "new_plan": "Aetna Choice POS II", "new_member": "W771092244", "copay": "25", "cc": "I've had a rash on my arms for a week.", "key": "rash", "temp": 98.7, "p": 82, "bp": "128/80", "new_allergy": "Ibuprofen \u2013 stomach bleeding", "medlist": "<table><tr><th>Medication on file</th><th>Directions</th></tr><tr><td>Lisinopril</td><td>10 mg daily</td></tr><tr><td>Simvastatin</td><td>20 mg at bedtime</td></tr></table>", "m0": "Lisinopril (10 mg daily)", "mb0": "Taking as listed", "m1": "Simvastatin (20 mg at bedtime)", "mb1": "Not taking \u2013 flag for provider", "m2": "Vitamin D (2,000 IU daily)", "mb2": "New, patient-reported \u2013 add and flag for provider", "medsay": "<div class=\"say\">\"I take my lisinopril every morning.\"</div><div class=\"say\">\"I stopped the simvastatin last month. It made my legs ache.\"</div><div class=\"say\">\"I started vitamin D on my own.\"</div>"}}, {"id": "A-1", "v": {"name": "George Ferris", "dob": "08/30/1960", "old_addr": "300 Hill Ave", "new_addr": "1422 Canal St", "new_city": "Huntington", "new_zip": "46750", "old_member": "ANX100288412", "new_plan": "Anthem Blue Access PPO", "new_member": "ANX558201937", "copay": "30", "cc": "My left knee has been swelling for two weeks.", "key": "knee", "temp": 98.2, "p": 76, "bp": "136/86", "new_allergy": "Sulfa \u2013 hives", "medlist": "<table><tr><th>Medication on file</th><th>Directions</th></tr><tr><td>Metformin</td><td>500 mg twice daily</td></tr><tr><td>Naproxen</td><td>500 mg twice daily</td></tr></table>", "m0": "Metformin (500 mg twice daily)", "mb0": "Taking as listed", "m1": "Naproxen (500 mg twice daily)", "mb1": "Not taking \u2013 flag for provider", "m2": "Fish oil (1,000 mg daily)", "mb2": "New, patient-reported \u2013 add and flag for provider", "medsay": "<div class=\"say\">\"I take metformin twice a day like always.\"</div><div class=\"say\">\"I quit the naproxen because it upset my stomach.\"</div><div class=\"say\">\"My daughter got me fish oil, I take one a day.\"</div>"}}, {"id": "A-2", "v": {"name": "Maria Ochoa", "dob": "05/15/1988", "old_addr": "71 Elm Ct", "new_addr": "2600 Wells St Apt 4B", "new_city": "Fort Wayne", "new_zip": "46808", "old_member": "UHC110293847", "new_plan": "UnitedHealthcare Choice Plus", "new_member": "UHC772910385", "copay": "20", "cc": "I've been dizzy every time I stand up since Monday.", "key": "dizzy", "temp": 97.9, "p": 104, "bp": "98/62", "new_allergy": "Amoxicillin \u2013 swelling of lips", "medlist": "<table><tr><th>Medication on file</th><th>Directions</th></tr><tr><td>Sertraline</td><td>50 mg daily</td></tr><tr><td>Hydrochlorothiazide</td><td>25 mg daily</td></tr></table>", "m0": "Sertraline (50 mg daily)", "mb0": "Taking as listed", "m1": "Hydrochlorothiazide (25 mg daily)", "mb1": "Taking as listed", "m2": "Cetirizine (10 mg daily)", "mb2": "New, patient-reported \u2013 add and flag for provider", "medsay": "<div class=\"say\">\"I take my sertraline every day.\"</div><div class=\"say\">\"I still take the water pill.\"</div><div class=\"say\">\"I've been taking Zyrtec for allergies.\"</div>"}}, {"id": "A-3", "v": {"name": "Arthur Bell", "dob": "11/22/1945", "old_addr": "9 Lake Dr", "new_addr": "45 Senior Village Way", "new_city": "Auburn", "new_zip": "46706", "old_member": "1EG4TE5MK72", "new_plan": "Humana Gold Plus HMO", "new_member": "H55120874", "copay": "0", "cc": "I'm more short of breath walking to the mailbox.", "key": "breath", "temp": 98.1, "p": 92, "bp": "142/88", "new_allergy": "Penicillin \u2013 rash", "medlist": "<table><tr><th>Medication on file</th><th>Directions</th></tr><tr><td>Furosemide</td><td>20 mg daily</td></tr><tr><td>Metoprolol</td><td>25 mg twice daily</td></tr></table>", "m0": "Furosemide (20 mg daily)", "mb0": "Not taking \u2013 flag for provider", "m1": "Metoprolol (25 mg twice daily)", "mb1": "Taking as listed", "m2": "Aspirin (81 mg daily)", "mb2": "New, patient-reported \u2013 add and flag for provider", "medsay": "<div class=\"say\">\"I ran out of the water pill a week ago.\"</div><div class=\"say\">\"I take metoprolol morning and night.\"</div><div class=\"say\">\"I take a baby aspirin every day.\"</div>"}}]};
+const KEY = 'meas209-ehr-' + ACT.id;
+let S = null; // state
+const $ = s => document.querySelector(s);
+const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = t => String(t ?? '').toLowerCase().replace(/[^a-z0-9./]/g, '');
+function now(){ return new Date().toLocaleString(); }
+function log(msg){ if(!S) return; S.log.push([new Date().toISOString(), msg]); renderLog(); }
+function renderLog(){ $('#logbox').innerHTML = '<b>Work log</b><br>' + S.log.slice(-40).map(l => esc(l[0].slice(11,19)) + ' · ' + esc(l[1])).join('<br>'); }
+function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); $('#status').textContent = 'Saved ' + new Date().toLocaleTimeString(); }catch(e){ $('#status').textContent = 'Could not save in this browser.'; } }
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){ return null; } }
+function attempts(){ try{ return JSON.parse(localStorage.getItem(KEY + '-att') || '[]'); }catch(e){ return []; } }
+
+$('#intro').innerHTML = ACT.intro;
+if (load()) $('#resume').classList.remove('hidden');
+
+function pickCase(mode){
+  const used = attempts();
+  if (mode === 'practice') return 0;
+  const pool = ACT.cases.map((c,i)=>i).filter(i => i>0 && !used.includes(i));
+  return pool.length ? pool[Math.floor(Math.random()*pool.length)] : 1 + Math.floor(Math.random()*(ACT.cases.length-1));
+}
+$('#go').onclick = () => {
+  const name = $('#sname').value.trim(), course = $('#scourse').value.trim();
+  if (!name) { alert('Enter your full name.'); return; }
+  const mode = $('#smode').value;
+  S = { name, course, mode, caseIdx: pickCase(mode), started: new Date().toISOString(), vals: {}, log: [], opened: {}, attempt: attempts().length + (mode==='assess'?1:0) };
+  log('Started ' + (mode==='assess'?'Assessment':'Practice') + ' · case ' + ACT.cases[S.caseIdx].id);
+  boot();
+};
+$('#resume').onclick = () => { S = load(); log('Reopened saved record'); boot(); };
+
+function C(){ return ACT.cases[S.caseIdx]; }
+function fill(t){ return String(t).replace(/\{(\w+)\}/g, (m,k) => (C().v[k] ?? m)); }
+
+function boot(){
+  $('#start').classList.add('hidden'); $('#app').classList.remove('hidden');
+  $('#who').innerHTML = esc(S.name) + '<br>' + esc(S.course) + ' · ' + (S.mode==='assess'?'Assessment attempt ' + S.attempt:'Practice') + ' · Case ' + esc(C().id);
+  $('#ehrTitle').textContent = fill(ACT.ehrTitle || 'Patient chart');
+  if (S.mode === 'practice') $('#check').classList.remove('hidden');
+  // sources
+  const tabs = $('#srcTabs'), docs = $('#srcDocs'); tabs.innerHTML = ''; docs.innerHTML = '';
+  (ACT.sources).forEach((s,i) => {
+    const b = document.createElement('button'); b.textContent = s.label; b.onclick = () => showSrc(i); tabs.appendChild(b);
+    const d = document.createElement('div'); d.className = 'doc'; d.innerHTML = fill(typeof s.html === 'function' ? '' : s.html); docs.appendChild(d);
+  });
+  showSrc(0, true);
+  // tasks
+  const T = $('#tasks'); T.innerHTML = '';
+  ACT.tasks.forEach((t, ti) => {
+    const sec = document.createElement('section'); sec.className = 'task';
+    sec.innerHTML = '<h3>' + esc(fill(t.title)) + '</h3><div class="body">' + (t.note ? '<div class="note">' + fill(t.note) + '</div>' : '') + '</div>';
+    const body = sec.querySelector('.body');
+    t.fields.forEach(f => body.appendChild(renderField(f)));
+    T.appendChild(sec);
+  });
+  renderLog();
+}
+function showSrc(i, silent){
+  document.querySelectorAll('#srcTabs button').forEach((b,j)=>b.classList.toggle('on', i===j));
+  document.querySelectorAll('#srcDocs .doc').forEach((d,j)=>d.classList.toggle('on', i===j));
+  if(!silent){ S.opened[ACT.sources[i].label] = true; log('Opened source: ' + ACT.sources[i].label); }
+}
+function renderField(f){
+  const wrap = document.createElement('div');
+  const val = S.vals[f.id];
+  const set = v => { S.vals[f.id] = v; log((f.logLabel || f.label || f.id).replace(/<[^>]+>/g,'') + ' → ' + (Array.isArray(v)?v.join(', '):String(v)).slice(0,60)); };
+  if (f.type === 'check') {
+    wrap.className = 'chk';
+    wrap.innerHTML = '<input type="checkbox" id="'+f.id+'"><label for="'+f.id+'">' + fill(f.label) + '</label><div class="fb" id="fb_'+f.id+'"></div>';
+    const el = wrap.querySelector('input'); el.checked = !!val; el.onchange = () => set(el.checked);
+    return wrap;
+  }
+  if (f.type === 'sort') {
+    wrap.innerHTML = '<div style="font-weight:bold;margin:4px 0 6px">' + fill(f.label) + '</div>';
+    f.items.forEach((it, k) => {
+      const row = document.createElement('div'); row.className = 'bucket';
+      const id = f.id + '_' + k;
+      row.innerHTML = '<span>' + esc(fill(it.t)) + '</span><select id="'+id+'" aria-label="Where does this belong?"><option value="">Choose…</option>' + f.buckets.map(b=>'<option>'+esc(b)+'</option>').join('') + '</select><div class="fb" id="fb_'+id+'"></div>';
+      const sel = row.querySelector('select'); sel.value = (val||{})[k] || '';
+      sel.onchange = () => { const cur = Object.assign({}, S.vals[f.id]||{}); cur[k] = sel.value; S.vals[f.id] = cur; log('Placed "' + fill(it.t).slice(0,40) + '" in ' + sel.value); };
+      wrap.appendChild(row);
+    });
+    return wrap;
+  }
+  if (f.type === 'search') {
+    wrap.innerHTML = '<div class="f"><label for="'+f.id+'">' + fill(f.label) + '</label><div style="display:flex;gap:6px"><input type="text" id="'+f.id+'" placeholder="Last name, first name or DOB"><button type="button">Search</button></div></div><div class="searchres" id="res_'+f.id+'">No search run yet.</div><div class="fb" id="fb_'+f.id+'"></div>';
+    const inp = wrap.querySelector('input'), btn = wrap.querySelector('button'), res = wrap.querySelector('.searchres');
+    inp.value = (val||{}).q || '';
+    btn.onclick = () => { const q = inp.value.trim(); const hits = (C().v.searchDb || []).filter(r => q && norm(r.join(' ')).includes(norm(q.split(/[ ,]+/)[0])));
+      res.innerHTML = hits.length ? '<b>Results:</b><br>' + hits.map(h=>esc(h.join(' · '))).join('<br>') : 'No matching records found for "' + esc(q) + '".';
+      S.vals[f.id] = { q, n: (S.vals[f.id]?.n||0) + 1, searched: true }; log('Searched records for "' + q + '" (' + hits.length + ' results)'); };
+    return wrap;
+  }
+  wrap.className = 'f';
+  let ctl = '';
+  if (f.type === 'select') ctl = '<select id="'+f.id+'"><option value="">Choose…</option>' + f.options.map(o=>'<option>'+esc(fill(o))+'</option>').join('') + '</select>';
+  else if (f.type === 'area') ctl = '<textarea id="'+f.id+'"></textarea>';
+  else ctl = '<input type="text" id="'+f.id+'" autocomplete="off">';
+  wrap.innerHTML = '<label for="'+f.id+'">' + fill(f.label) + '</label>' + ctl + (f.hint && S.mode==='practice' ? '<div class="hint">Hint: ' + fill(f.hint) + '</div>' : '') + '<div class="fb" id="fb_'+f.id+'"></div>';
+  const el = wrap.querySelector('#'+f.id); el.value = val ?? ''; el.onchange = () => set(el.value);
+  return wrap;
+}
+
+// ---- grading
+function expect(f){ const e = f.expect; return (typeof e === 'string') ? fill(e) : e; }
+function gradeField(f){
+  const v = S.vals[f.id]; const c = C();
+  if (f.type === 'check') { const want = !!(typeof f.expect === 'string' ? c.v[f.expect.replace(/[{}]/g,'')] : f.expect); return [{ ok: !!v === want, id: f.id, label: f.label, got: v ? 'checked' : 'not checked', crit: f.crit, critical: f.critical && !!v !== want }]; }
+  if (f.type === 'sort') return f.items.map((it,k)=>{ const want = typeof it.b === 'string' && it.b.startsWith('{') ? fill(it.b) : it.b; const got=(v||{})[k]||''; return { ok: got===want, id: f.id+'_'+k, label: fill(it.t), got: got||'(blank)', crit: f.crit, critical: it.critical && got!==want }; });
+  if (f.type === 'search') return [{ ok: !!(v && v.searched), id: f.id, label: f.label, got: v&&v.searched ? 'search run: "' + v.q + '"' : 'no search', crit: f.crit, critical: f.critical && !(v&&v.searched) }];
+  const want = expect(f); const got = String(v ?? '').trim();
+  let ok;
+  if (f.match === 'num') { const a = parseFloat(got.replace(/[^0-9.\-]/g,'')), b = parseFloat(want); ok = !isNaN(a) && Math.abs(a-b) <= (f.tol||0); }
+  else if (f.match === 'contains') ok = [].concat(want).every(w => norm(got).includes(norm(fill(w))));
+  else if (f.match === 'any') ok = [].concat(want).some(w => norm(got) === norm(fill(w)));
+  else if (f.match === 'regex') ok = new RegExp(fill(want), 'i').test(got);
+  else ok = norm(got) === norm(want);
+  return [{ ok, id: f.id, label: f.label, got: got || '(blank)', crit: f.crit, critical: f.critical && !ok }];
+}
+function gradeAll(){ const rows = []; ACT.tasks.forEach(t => t.fields.forEach(f => rows.push(...gradeField(f)))); return rows; }
+$('#check').onclick = () => {
+  const rows = gradeAll(); let n=0;
+  rows.forEach(r => { const fb = document.getElementById('fb_'+r.id); if(!fb) return; fb.className = 'fb ' + (r.ok?'ok':'no'); fb.textContent = r.ok ? 'Correct' : 'Not yet. Check the source documents.'; if(r.ok) n++; });
+  log('Checked work: ' + n + '/' + rows.length + ' correct'); $('#status').textContent = n + ' of ' + rows.length + ' items correct';
+};
+$('#save').onclick = () => { log('Saved record'); persist(); };
+$('#report').onclick = () => {
+  if (S.mode === 'assess' && !confirm('Create your submission report now? This ends the attempt.')) return;
+  const rows = gradeAll(); const crits = {};
+  rows.forEach(r => { const k = r.crit || 'General'; crits[k] = crits[k] || {ok:0,n:0}; crits[k].n++; if(r.ok) crits[k].ok++; });
+  const critical = rows.filter(r=>r.critical);
+  log('Created submission report'); S.finished = new Date().toISOString(); persist();
+  if (S.mode === 'assess') { const a = attempts(); a.push(S.caseIdx); try{ localStorage.setItem(KEY+'-att', JSON.stringify(a)); }catch(e){} }
+  const allPass = Object.values(crits).every(c => c.ok/c.n >= 0.85) && !critical.length;
+  const w = window.open('', '_blank');
+  const css = 'body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#1d2421;font-size:13px}h1{color:#006648;font-size:20px;margin:0}h2{font-size:15px;color:#006648;border-bottom:2px solid #8dc63f;padding-bottom:3px;margin-top:18px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #cfd8d3;padding:4px 6px;text-align:left;vertical-align:top}th{background:#e8f5ea}.ok{color:#1b6e3a;font-weight:bold}.no{color:#a4161a;font-weight:bold}.box{border:2px solid #006648;padding:8px 10px;margin:10px 0}@media print{button{display:none}}';
+  const critRows = Object.entries(crits).map(([k,c]) => '<tr><td>'+esc(k)+'</td><td>'+c.ok+' / '+c.n+'</td><td>'+Math.round(c.ok/c.n*100)+'%</td><td class="'+(c.ok/c.n>=0.85?'ok':'no')+'">'+(c.ok/c.n>=0.85?'Meets 85%':'Below 85%')+'</td></tr>').join('');
+  const det = rows.map(r => '<tr><td>'+esc(r.crit||'')+'</td><td>'+esc(String(r.label).replace(/<[^>]+>/g,''))+'</td><td>'+esc(r.got)+'</td><td class="'+(r.ok?'ok':'no')+'">'+(r.ok?'✓':'✗')+(r.critical?' (critical)':'')+'</td></tr>').join('');
+  const lg = S.log.map(l => '<tr><td>'+esc(new Date(l[0]).toLocaleTimeString())+'</td><td>'+esc(l[1])+'</td></tr>').join('');
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(ACT.code+' report - '+S.name)+'</title><style>'+css+'</style></head><body>'
+   + '<button onclick="window.print()">Print / Save as PDF</button>'
+   + '<h1>'+esc(ACT.title)+' · Submission Report</h1><div>'+esc(ACT.code)+' · MEAS 209 EHR Simulation</div>'
+   + '<div class="box"><b>Student:</b> '+esc(S.name)+' &nbsp; <b>Course:</b> '+esc(S.course)+'<br><b>Mode:</b> '+(S.mode==='assess'?'Assessment, attempt '+S.attempt:'Practice (not for grading)')+' &nbsp; <b>Case:</b> '+esc(C().id)+'<br><b>Started:</b> '+esc(new Date(S.started).toLocaleString())+' &nbsp; <b>Report created:</b> '+esc(now())+'</div>'
+   + '<h2>Score by criterion</h2><table><tr><th>Criterion</th><th>Correct</th><th>Score</th><th>Standard</th></tr>'+critRows+'</table>'
+   + '<p><b>Critical errors:</b> '+(critical.length? critical.map(r=>esc(String(r.label).replace(/<[^>]+>/g,''))).join('; ') : 'None')+'</p>'
+   + '<p><b>Overall:</b> <span class="'+(allPass?'ok':'no')+'">'+(allPass?'Meets the 85% standard on every criterion with no critical error':'Does not yet meet the standard')+'</span></p>'
+   + '<h2>Item detail</h2><table><tr><th>Criterion</th><th>Item</th><th>Entered</th><th>Result</th></tr>'+det+'</table>'
+   + '<h2>Work log</h2><table><tr><th>Time</th><th>Action</th></tr>'+lg+'</table>'
+   + '</body></html>');
+  w.document.close();
+};
+</script>
+</body>
+</html>
